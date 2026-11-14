@@ -6,7 +6,6 @@
 
 import "./style.css";
 
-import * as DataStore from "@api/DataStore";
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import ErrorBoundary from "@components/ErrorBoundary";
@@ -21,19 +20,11 @@ import { KeyboardEvent } from "react";
 const DEFAULT_BOY_CHANNEL    = "852418390618275891";
 const DEFAULT_GIRL_CHANNEL   = "853603250443780116";
 const DEFAULT_REJECT_CHANNEL = "852418435031498752";
-const DEFAULT_RELAY_GUILD_ID = "1535963962053632120";
-
 const OLD_REJECT_PRESETS     = "АртёмВавилов;Запрещённая символика;Пропаганда наркотиков;Оскорбления;Ссылки без спойлера;Перезаходит в прихожую;Возраст";
 const DEFAULT_REJECT_PRESETS = "Молчит в войсе, в лс отписано;АртёмВавилов;12 лет, ;Оскорбляет";
 const PLUGIN_VERSION = "1.2.0";
 const RELEASE_API = "https://api.github.com/repos/Akimuska/Vencord-Supportka/releases?per_page=20";
 const RELEASE_PAGE = "https://github.com/Akimuska/Vencord-Supportka/releases/latest";
-
-const CHANNEL_CACHE_KEY = "vc-supportka-channels";
-let channelCache: Record<string, string> = {};
-const channelCacheReady = DataStore.get<Record<string, string>>(CHANNEL_CACHE_KEY)
-    .then(cache => { channelCache = cache ?? {}; })
-    .catch(() => {});
 
 const cl = classNameFactory("vc-supportka-");
 
@@ -114,12 +105,6 @@ async function sendRawMessage(channelId: string, content: string) {
 
 type TargetChannel = "boy" | "girl" | "reject";
 
-const CHANNEL_NAMES: Record<TargetChannel, string> = {
-    boy: "мальчик",
-    girl: "девочка",
-    reject: "отказ"
-};
-
 function configuredChannelId(type: TargetChannel): string {
     switch (type) {
         case "boy":    return settings.store.boyChannelId;
@@ -128,46 +113,11 @@ function configuredChannelId(type: TargetChannel): string {
     }
 }
 
-async function resolveTargetChannel(type: TargetChannel): Promise<string | null> {
-    await channelCacheReady;
-    if (channelCache[type]) return channelCache[type];
-
-    const configured = configuredChannelId(type);
-    try {
-        await RestAPI.get({ url: `/channels/${configured}` });
-        channelCache[type] = configured;
-        return configured;
-    } catch { /* configured channel is unavailable; try creating a fallback */ }
-
-    try {
-        const { body } = await RestAPI.post({
-            url: `/guilds/${DEFAULT_RELAY_GUILD_ID}/channels`,
-            body: { name: CHANNEL_NAMES[type], type: 0 }
-        });
-        channelCache[type] = body.id;
-        await DataStore.set(CHANNEL_CACHE_KEY, channelCache);
-        showToast({ text: `Сапортка: канал «${CHANNEL_NAMES[type]}» создан автоматически`, variant: "success" });
-        return body.id;
-    } catch {
-        return null;
-    }
-}
-
 async function sendToTarget(type: TargetChannel, content: string): Promise<boolean> {
-    const channel = channelCache[type] ?? configuredChannelId(type);
     try {
-        await sendRawMessage(channel, content);
+        await sendRawMessage(configuredChannelId(type), content);
         return true;
-    } catch {
-        const fallback = await resolveTargetChannel(type);
-        if (!fallback || fallback === channel) return false;
-        try {
-            await sendRawMessage(fallback, content);
-            return true;
-        } catch {
-            return false;
-        }
-    }
+    } catch { return false; }
 }
 
 async function sendBoy(userId: string) {

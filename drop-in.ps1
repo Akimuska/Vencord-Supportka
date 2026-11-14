@@ -49,6 +49,49 @@ function Copy-Files {
     return $true
 }
 
+# ---- enable supportka in Vencord settings ----
+function Enable-Supportka {
+    param([string]$settingsPath)
+    if (-not $settingsPath) { return $false }
+
+    try {
+        $cfg = if (Test-Path $settingsPath) {
+            Get-Content -LiteralPath $settingsPath -Raw | ConvertFrom-Json
+        } else {
+            [pscustomobject]@{}
+        }
+
+        if (-not $cfg.PSObject.Properties['plugins']) {
+            $cfg | Add-Member -MemberType NoteProperty -Name plugins -Value ([pscustomobject]@{})
+        }
+        if (-not $cfg.plugins.PSObject.Properties['supportka']) {
+            $cfg.plugins | Add-Member -MemberType NoteProperty -Name supportka -Value ([pscustomobject]@{})
+        }
+        if (-not $cfg.plugins.supportka.PSObject.Properties['enabled']) {
+            $cfg.plugins.supportka | Add-Member -MemberType NoteProperty -Name enabled -Value $true
+        } else {
+            $cfg.plugins.supportka.enabled = $true
+        }
+
+        if ($cfg.PSObject.Properties['enabledPlugins']) {
+            if (-not $cfg.enabledPlugins) { $cfg.enabledPlugins = [pscustomobject]@{} }
+            if (-not $cfg.enabledPlugins.PSObject.Properties['supportka']) {
+                $cfg.enabledPlugins | Add-Member -MemberType NoteProperty -Name supportka -Value $true
+            } else {
+                $cfg.enabledPlugins.supportka = $true
+            }
+        }
+
+        $json = $cfg | ConvertTo-Json -Depth 30
+        Set-Content -LiteralPath $settingsPath -Value $json -Encoding utf8
+        Write-Host "  +  supportka enabled in $settingsPath" -ForegroundColor Green
+        return $true
+    } catch {
+        Write-Host "  !! Could not enable supportka in $settingsPath" -ForegroundColor Yellow
+        return $false
+    }
+}
+
 $installed = @()
 
 # ---- 1. Vencord (Discord injection) ----
@@ -69,6 +112,8 @@ foreach ($d in ($vencordDirs | Select-Object -Unique)) {
     $dist = Join-Path $d "dist"
     if (Test-Path (Join-Path $dist "renderer.js")) {
         if (Copy-Files $dist $standalone) { $installed += $dist }
+        $settings = Join-Path $d "settings.json"
+        Enable-Supportka $settings | Out-Null
     }
 }
 
@@ -104,6 +149,8 @@ foreach ($d in ($vesktopDirs | Select-Object -Unique)) {
     New-Item -ItemType Directory -Path $d -Force | Out-Null
     if (Copy-Files $d $desktop) {
         try { Set-Content -LiteralPath (Join-Path $d "package.json") -Value "" -Encoding ascii -ErrorAction Stop } catch {}
+        $settings = Join-Path (Split-Path (Split-Path $d -Parent) -Parent) "settings.json"
+        Enable-Supportka $settings | Out-Null
         $installed += $d
     }
 }

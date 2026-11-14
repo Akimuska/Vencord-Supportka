@@ -69,12 +69,4 @@ jobs:
         with:
           name: "${{ github.ref_name }} ${{ steps.hash.outputs.short }}"
           files: |
-            vencord/dist/renderer.js
-            vencord/dist/renderer.css
-            vencord/dist/preload.js
-            vencord/dist/patcher.js
-            vencord/dist/vencordDesktopMain.js
-            vencord/dist/vencordDesktopPreload.js
-            vencord/dist/vencordDesktopRenderer.js
-            vencord/dist/vencordDesktopRenderer.css
             supportka-${{ github.ref_name }}.zip

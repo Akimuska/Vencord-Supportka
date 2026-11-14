@@ -1,29 +1,29 @@
-{
-    "name": "@braqden/vencord-supportka",
-    "version": "4.0.0",
-    "description": "Плагин supportka для Vencord: кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя.",
-    "license": "GPL-3.0-or-later",
-    "author": "Braqden",
-    "keywords": [
-        "vencord",
-        "plugin",
-        "discord",
-        "supportka",
-        "lounge"
-    ],
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/Braqden/Vencord-Supportka.git"
-    },
-    "files": [
-        "src/plugins/supportka",
-        "README.md"
-    ],
-    "publishConfig": {
-        "registry": "https://npm.pkg.github.com/",
-        "access": "public"
-    },
-    "devDependencies": {
-        "typescript": "5.4"
-    }
+﻿{
+    "name":  "@braqden/vencord-supportka",
+    "version":  "4.0.0",
+    "description":  "Кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя (v1.2)",
+    "license":  "GPL-3.0-or-later",
+    "author":  "Braqden",
+    "keywords":  [
+                     "vencord",
+                     "plugin",
+                     "discord",
+                     "supportka",
+                     "lounge"
+                 ],
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/Braqden/Vencord-Supportka.git"
+                   },
+    "files":  [
+                  "src/plugins/supportka",
+                  "README.md"
+              ],
+    "publishConfig":  {
+                          "registry":  "https://npm.pkg.github.com/",
+                          "access":  "public"
+                      },
+    "devDependencies":  {
+                            "typescript":  "5.4"
+                        }
 }

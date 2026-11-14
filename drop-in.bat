@@ -51,6 +51,12 @@ function Copy-Files {
         $dstResolved = (Resolve-Path $to -ErrorAction SilentlyContinue).Path
         if ($srcResolved -and $dstResolved -and $srcResolved -ieq $dstResolved) { continue }
         try {
+            if (Test-Path $to) {
+                $backup = "$to.supportka-backup"
+                if (-not (Test-Path $backup)) {
+                    Copy-Item -LiteralPath $to -Destination $backup -ErrorAction Stop
+                }
+            }
             Copy-Item -LiteralPath $from -Destination $to -Force -ErrorAction Stop
             Write-Host "  +  $f" -ForegroundColor Green
         } catch {
@@ -123,7 +129,7 @@ foreach ($d in ($vencordDirs | Select-Object -Unique)) {
     $dist = Join-Path $d "dist"
     if (Test-Path (Join-Path $dist "renderer.js")) {
         if (Copy-Files $dist $standalone) { $installed += $dist }
-        $settings = Join-Path $d "settings.json"
+        $settings = Join-Path $d "settings\settings.json"
         Enable-Supportka $settings | Out-Null
     }
 }

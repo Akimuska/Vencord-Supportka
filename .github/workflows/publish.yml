@@ -46,15 +46,15 @@ jobs:
 
       - name: Create ZIP archive
         run: |
-           mkdir -p "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist"
+          mkdir -p "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist"
           cp vencord/dist/renderer.js vencord/dist/renderer.css \
              vencord/dist/preload.js vencord/dist/patcher.js \
              vencord/dist/vencordDesktopMain.js vencord/dist/vencordDesktopPreload.js \
              vencord/dist/vencordDesktopRenderer.js vencord/dist/vencordDesktopRenderer.css \
               "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist/"
-           cp drop-in.bat "/tmp/supportka/supportka-${{ github.ref_name }}/"
-           cd /tmp/supportka
-           zip -r "supportka-${{ github.ref_name }}.zip" "supportka-${{ github.ref_name }}"
+          cp drop-in.bat "/tmp/supportka/supportka-${{ github.ref_name }}/"
+          cd /tmp/supportka
+          zip -r "supportka-${{ github.ref_name }}.zip" "supportka-${{ github.ref_name }}"
           mv "supportka-${{ github.ref_name }}.zip" "$GITHUB_WORKSPACE"
 
       - name: Publish to GitHub Packages

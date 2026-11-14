@@ -36,7 +36,7 @@ jobs:
       - name: Copy plugin
         run: |
           cp -r src/plugins/supportka vencord/src/plugins/supportka
-          version="${GITHUB_REF_NAME#v}.0"
+          version="${GITHUB_REF_NAME#v}"
           sed -i "s/const PLUGIN_VERSION = .*/const PLUGIN_VERSION = \"$version\";/" vencord/src/plugins/supportka/index.tsx
 
       - name: Build standalone

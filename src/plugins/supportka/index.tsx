@@ -1,6 +1,6 @@
 /*
  * Vencord, a Discord client mod
- * Copyright (c) 2026 Brqden_
+ * Copyright (c) 2026 akimuska
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -313,7 +313,7 @@ export default definePlugin({
     searchTerms: ["сапортка", "мальчик", "девочка", "отказ", "мьют"],
     tags: ["Voice", "Utility"],
     enabledByDefault: true,
-    authors: [{ name: "Brqden_", id: 502445992239562772n }],
+    authors: [{ name: "akimuska" }],
     settings,
 
     start() {

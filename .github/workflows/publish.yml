@@ -38,7 +38,7 @@ jobs:
 
       - name: Build standalone
         env:
-          VENCORD_REMOTE: Braqden/Vencord-Supportka
+          VENCORD_REMOTE: kimvk4023-lgtm/Vencord-Supportka
           VENCORD_HASH: ${{ steps.hash.outputs.short }}
         run: |
           cd vencord

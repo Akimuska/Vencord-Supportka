@@ -1,9 +1,9 @@
 ﻿{
     "name":  "@braqden/vencord-supportka",
-    "version":  "4.0.0",
+    "version":  "1.2.0",
     "description":  "Кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя (v1.2)",
     "license":  "GPL-3.0-or-later",
-    "author":  "Braqden",
+    "author":  "akimuska",
     "keywords":  [
                      "vencord",
                      "plugin",
@@ -13,7 +13,7 @@
                  ],
     "repository":  {
                        "type":  "git",
-                       "url":  "https://github.com/Braqden/Vencord-Supportka.git"
+                       "url":  "https://github.com/kimvk4023-lgtm/Vencord-Supportka.git"
                    },
     "files":  [
                   "src/plugins/supportka",

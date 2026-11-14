@@ -1,6 +1,6 @@
 # Vencord-Supportka
 
-**Плагин supportka для Vencord** — упрощённая версия без памятки и оверлея, только кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя.
+Плагин supportka для Vencord — кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя.
 
 ## Что делает
 
@@ -11,11 +11,12 @@
 
 ## Установка
 
-1. Скачай [последний релиз](https://github.com/kimvk4023-lgtm/Vencord-Supportka/releases) (файл `supportka-vX.X.X.zip`)
-2. Распакуй архив на рабочий стол
-3. Запусти `drop-in.bat`
-4. Перезапусти Discord/Vesktop
-5. Включи плагин в настройках Vencord: **Settings > Vencord > Plugins > supportka**
+1. Скачай `supportka-v1.2.zip` из [последнего релиза](https://github.com/kimvk4023-lgtm/Vencord-Supportka/releases)
+2. Полностью закрой Discord, включая значок в системном трее
+3. Распакуй папку `supportka-v1.2` из архива
+4. Запусти `drop-in.bat`
+5. Запусти Discord
+6. Плагин автоматически включится
 
 ## Настройки
 

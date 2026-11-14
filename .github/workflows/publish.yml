@@ -49,8 +49,6 @@ jobs:
           mkdir -p "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist"
           cp vencord/dist/renderer.js vencord/dist/renderer.css \
              vencord/dist/preload.js vencord/dist/patcher.js \
-             vencord/dist/vencordDesktopMain.js vencord/dist/vencordDesktopPreload.js \
-             vencord/dist/vencordDesktopRenderer.js vencord/dist/vencordDesktopRenderer.css \
               "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist/"
           cp drop-in.bat "/tmp/supportka/supportka-${{ github.ref_name }}/"
           cd /tmp/supportka

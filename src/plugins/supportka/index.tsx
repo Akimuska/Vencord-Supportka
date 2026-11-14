@@ -14,7 +14,7 @@ import { Flex } from "@components/Flex";
 import { classNameFactory } from "@utils/css";
 import definePlugin, { OptionType } from "@utils/types";
 import { RenderModalProps, User } from "@vencord/discord-types";
-import { Forms, Modal, openModal, RestAPI, SelectedGuildStore, showToast, TextInput, Toasts, useCallback, useMemo, UserStore, useState, useStateFromStores, VoiceStateStore } from "@webpack/common";
+import { Modal, openModal, RestAPI, SelectedGuildStore, showToast, TextInput, useCallback, useMemo, UserStore, useState, useStateFromStores, VoiceStateStore } from "@webpack/common";
 import { KeyboardEvent } from "react";
 
 // --- Hardcoded channel IDs (Lounge server) ---
@@ -63,18 +63,18 @@ const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms
 
 function setServerMute(guildId: string, userId: string, mute: boolean) {
     if (userId === UserStore.getCurrentUser().id) {
-        showToast("Нельзя замьютить/размьютить самого себя", Toasts.Type.FAILURE);
+        showToast({ text: "Нельзя замьютить/размьютить самого себя", variant: "critical" });
         return;
     }
     RestAPI.patch({
         url: `/guilds/${guildId}/members/${userId}`,
         body: { mute }
     })
-        .then(() => showToast(mute ? "Пользователь замьючен" : "Пользователь размьючен", Toasts.Type.SUCCESS))
-        .catch(err => showToast(
-            `Не удалось изменить мьют (${err?.response?.status ?? err?.message ?? "нет прав"})`,
-            Toasts.Type.FAILURE
-        ));
+        .then(() => showToast({ text: mute ? "Пользователь замьючен" : "Пользователь размьючен", variant: "success" }))
+        .catch(err => showToast({
+            text: `Не удалось изменить мьют (${err?.response?.status ?? err?.message ?? "нет прав"})`,
+            variant: "critical"
+        }));
 }
 
 async function sendRawMessage(channelId: string, content: string) {
@@ -114,7 +114,7 @@ async function resolveTargetChannel(type: TargetChannel): Promise<string | null>
         });
         cache[type] = body.id;
         await DataStore.set(CHANNEL_CACHE_KEY, cache);
-        showToast(`Сапортка: канал «${CHANNEL_NAMES[type]}» создан автоматически`, Toasts.Type.SUCCESS);
+        showToast({ text: `Сапортка: канал «${CHANNEL_NAMES[type]}» создан автоматически`, variant: "success" });
         return body.id;
     } catch {
         return null;
@@ -124,34 +124,34 @@ async function resolveTargetChannel(type: TargetChannel): Promise<string | null>
 async function sendBoy(userId: string) {
     const channel = await resolveTargetChannel("boy");
     if (!channel) {
-        showToast("Сапортка: канал «мальчик» недоступен (нет прав?)", Toasts.Type.FAILURE);
+        showToast({ text: "Сапортка: канал «мальчик» недоступен (нет прав?)", variant: "critical" });
         return;
     }
     await sendRawMessage(channel, userId);
-    showToast("Отправлено: Мальчик", Toasts.Type.SUCCESS);
+    showToast({ text: "Отправлено: Мальчик", variant: "success" });
 }
 
 async function sendGirl(userId: string) {
     const girlChannel = await resolveTargetChannel("girl");
     const boyChannel  = await resolveTargetChannel("boy");
     if (!girlChannel || !boyChannel) {
-        showToast("Сапортка: каналы «девочка»/«мальчик» недоступны", Toasts.Type.FAILURE);
+        showToast({ text: "Сапортка: каналы «девочка»/«мальчик» недоступны", variant: "critical" });
         return;
     }
     await sendRawMessage(girlChannel, userId);
     await wait(250);
     await sendRawMessage(boyChannel, userId);
-    showToast("Отправлено: Девочка", Toasts.Type.SUCCESS);
+    showToast({ text: "Отправлено: Девочка", variant: "success" });
 }
 
 async function sendReject(userId: string, reason: string) {
     const channel = await resolveTargetChannel("reject");
     if (!channel) {
-        showToast("Сапортка: канал «отказ» недоступен (нет прав?)", Toasts.Type.FAILURE);
+        showToast({ text: "Сапортка: канал «отказ» недоступен (нет прав?)", variant: "critical" });
         return;
     }
     await sendRawMessage(channel, `${userId} ${reason}`);
-    showToast("Отправлено: Отказ", Toasts.Type.SUCCESS);
+    showToast({ text: "Отправлено: Отказ", variant: "success" });
 }
 
 // --- SVG icons ---
@@ -218,7 +218,7 @@ function RejectModal({ modalProps, userId, guildId }: {
                 { text: "Отправить", variant: "critical-primary", disabled: !trimmed, onClick: onConfirm }
             ]}
         >
-            <Forms.FormTitle tag="h5">Введите причину отказа</Forms.FormTitle>
+            <h5>Введите причину отказа</h5>
             <TextInput
                 value={reason}
                 onChange={setReason}

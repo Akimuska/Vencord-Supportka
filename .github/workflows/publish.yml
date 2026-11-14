@@ -34,11 +34,14 @@ jobs:
         run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Copy plugin
-        run: cp -r src/plugins/supportka vencord/src/plugins/supportka
+        run: |
+          cp -r src/plugins/supportka vencord/src/plugins/supportka
+          version="${GITHUB_REF_NAME#v}.0"
+          sed -i "s/const PLUGIN_VERSION = .*/const PLUGIN_VERSION = \"$version\";/" vencord/src/plugins/supportka/index.tsx
 
       - name: Build standalone
         env:
-          VENCORD_REMOTE: kimvk4023-lgtm/Vencord-Supportka
+          VENCORD_REMOTE: Akimuska/Vencord-Supportka
           VENCORD_HASH: ${{ steps.hash.outputs.short }}
         run: |
           cd vencord

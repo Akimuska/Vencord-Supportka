@@ -25,10 +25,43 @@ const DEFAULT_RELAY_GUILD_ID = "1535963962053632120";
 
 const OLD_REJECT_PRESETS     = "АртёмВавилов;Запрещённая символика;Пропаганда наркотиков;Оскорбления;Ссылки без спойлера;Перезаходит в прихожую;Возраст";
 const DEFAULT_REJECT_PRESETS = "Молчит в войсе, в лс отписано;АртёмВавилов;12 лет, ;Оскорбляет";
+const PLUGIN_VERSION = "1.2.0";
+const RELEASE_API = "https://api.github.com/repos/Akimuska/Vencord-Supportka/releases?per_page=20";
+const RELEASE_PAGE = "https://github.com/Akimuska/Vencord-Supportka/releases/latest";
 
 const CHANNEL_CACHE_KEY = "vc-supportka-channels";
+let channelCache: Record<string, string> = {};
+const channelCacheReady = DataStore.get<Record<string, string>>(CHANNEL_CACHE_KEY)
+    .then(cache => { channelCache = cache ?? {}; })
+    .catch(() => {});
 
 const cl = classNameFactory("vc-supportka-");
+
+async function checkForUpdates() {
+    try {
+        const response = await fetch(RELEASE_API, {
+            headers: { Accept: "application/vnd.github+json" },
+            signal: AbortSignal.timeout(5000)
+        });
+        if (!response.ok) return;
+
+        const releases = await response.json() as Array<{ tag_name?: string; draft?: boolean; prerelease?: boolean }>;
+        const update = releases.find(release => {
+            const version = release.tag_name?.replace(/^v/, "");
+            return !release.draft && !release.prerelease && version
+                && version.localeCompare(PLUGIN_VERSION, undefined, { numeric: true }) > 0;
+        });
+        const version = update?.tag_name?.replace(/^v/, "");
+        if (!version) return;
+
+        showToast({
+            text: `Доступна Supportka ${version}. Установи новый ZIP и перезапусти Discord: ${RELEASE_PAGE}`,
+            duration: 12000
+        });
+    } catch {
+        // Update checks are optional and must not affect plugin startup.
+    }
+}
 
 // --- Settings ---
 const settings = definePluginSettings({
@@ -59,8 +92,6 @@ const settings = definePluginSettings({
 });
 
 // --- Helpers ---
-const wait = (ms: number) => new Promise<void>(resolve => setTimeout(resolve, ms));
-
 function setServerMute(guildId: string, userId: string, mute: boolean) {
     if (userId === UserStore.getCurrentUser().id) {
         showToast({ text: "Нельзя замьютить/размьютить самого себя", variant: "critical" });
@@ -98,22 +129,23 @@ function configuredChannelId(type: TargetChannel): string {
 }
 
 async function resolveTargetChannel(type: TargetChannel): Promise<string | null> {
-    const cache = (await DataStore.get<Record<string, string>>(CHANNEL_CACHE_KEY)) ?? {};
-    if (cache[type]) return cache[type];
+    await channelCacheReady;
+    if (channelCache[type]) return channelCache[type];
 
     const configured = configuredChannelId(type);
     try {
         await RestAPI.get({ url: `/channels/${configured}` });
+        channelCache[type] = configured;
         return configured;
-    } catch { /* канала нет или нет доступа — пробуем создать */ }
+    } catch { /* configured channel is unavailable; try creating a fallback */ }
 
     try {
         const { body } = await RestAPI.post({
             url: `/guilds/${DEFAULT_RELAY_GUILD_ID}/channels`,
             body: { name: CHANNEL_NAMES[type], type: 0 }
         });
-        cache[type] = body.id;
-        await DataStore.set(CHANNEL_CACHE_KEY, cache);
+        channelCache[type] = body.id;
+        await DataStore.set(CHANNEL_CACHE_KEY, channelCache);
         showToast({ text: `Сапортка: канал «${CHANNEL_NAMES[type]}» создан автоматически`, variant: "success" });
         return body.id;
     } catch {
@@ -121,36 +153,51 @@ async function resolveTargetChannel(type: TargetChannel): Promise<string | null>
     }
 }
 
+async function sendToTarget(type: TargetChannel, content: string): Promise<boolean> {
+    const channel = channelCache[type] ?? configuredChannelId(type);
+    try {
+        await sendRawMessage(channel, content);
+        return true;
+    } catch {
+        const fallback = await resolveTargetChannel(type);
+        if (!fallback || fallback === channel) return false;
+        try {
+            await sendRawMessage(fallback, content);
+            return true;
+        } catch {
+            return false;
+        }
+    }
+}
+
 async function sendBoy(userId: string) {
-    const channel = await resolveTargetChannel("boy");
-    if (!channel) {
+    showToast({ text: "Отправляю: Мальчик…" });
+    if (!await sendToTarget("boy", userId)) {
         showToast({ text: "Сапортка: канал «мальчик» недоступен (нет прав?)", variant: "critical" });
         return;
     }
-    await sendRawMessage(channel, userId);
     showToast({ text: "Отправлено: Мальчик", variant: "success" });
 }
 
 async function sendGirl(userId: string) {
-    const girlChannel = await resolveTargetChannel("girl");
-    const boyChannel  = await resolveTargetChannel("boy");
-    if (!girlChannel || !boyChannel) {
+    showToast({ text: "Отправляю: Девочка…" });
+    if (!await sendToTarget("girl", userId)) {
         showToast({ text: "Сапортка: каналы «девочка»/«мальчик» недоступны", variant: "critical" });
         return;
     }
-    await sendRawMessage(girlChannel, userId);
-    await wait(250);
-    await sendRawMessage(boyChannel, userId);
+    if (!await sendToTarget("boy", userId)) {
+        showToast({ text: "Запись «Девочка» отправлена, но канал «Мальчик» недоступен", variant: "critical" });
+        return;
+    }
     showToast({ text: "Отправлено: Девочка", variant: "success" });
 }
 
 async function sendReject(userId: string, reason: string) {
-    const channel = await resolveTargetChannel("reject");
-    if (!channel) {
+    showToast({ text: "Отправляю: Отказ…" });
+    if (!await sendToTarget("reject", `${userId} ${reason}`)) {
         showToast({ text: "Сапортка: канал «отказ» недоступен (нет прав?)", variant: "critical" });
         return;
     }
-    await sendRawMessage(channel, `${userId} ${reason}`);
     showToast({ text: "Отправлено: Отказ", variant: "success" });
 }
 
@@ -320,6 +367,7 @@ export default definePlugin({
         if (settings.store.rejectPresets === OLD_REJECT_PRESETS) {
             settings.store.rejectPresets = DEFAULT_REJECT_PRESETS;
         }
+        void checkForUpdates();
     },
 
     patches: [

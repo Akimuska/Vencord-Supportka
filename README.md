@@ -1,4 +1,4 @@
-# Vencord-Supportka
+# Vencord-Supportka v1.2.5
 
 Плагин supportka для Vencord — кнопки Мальчик/Девочка/Отказ и мьют прямо из профиля пользователя.
 
@@ -13,9 +13,9 @@
 
 ## Установка
 
-1. Скачай `supportka-v1.2.zip` из [последнего релиза](https://github.com/kimvk4023-lgtm/Vencord-Supportka/releases)
+1. Скачай [`supportka-v1.2.5.zip`](https://github.com/Akimuska/Vencord-Supportka/releases/download/v1.2.5/supportka-v1.2.5.zip)
 2. Полностью закрой Discord, включая значок в системном трее
-3. Распакуй папку `supportka-v1.2` из архива
+3. Распакуй папку `supportka-v1.2.5` из архива
 4. Запусти `drop-in.bat`
 5. Запусти Discord
 6. Плагин автоматически включится

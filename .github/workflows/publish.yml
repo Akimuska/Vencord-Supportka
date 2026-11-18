@@ -52,7 +52,7 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#v}"
           grep -q "vc-supportka" vencord/dist/renderer.js
-          grep -q "Supportka v$version" vencord/dist/renderer.js
+          grep -q "var Mi=\"$version\"" vencord/dist/renderer.js
           ! grep -q "Vencord update is available" vencord/dist/renderer.js
           ! grep -q "Click here to view the update" vencord/dist/renderer.js
 

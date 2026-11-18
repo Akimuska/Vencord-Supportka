@@ -1,7 +1,7 @@
 {
     "name": "vencord-supportka",
     "version": "1.2.6",
-    "description": "Supportka v1.2.6 — кнопки Мальчик/Девочка/Не-допуск, мьют и отключение от войса в профиле.",
+    "description": "Плагин Supportka для Vencord: кнопки Мальчик, Девочка и Не-допуск, мьют и отключение от войса в профиле пользователя.",
     "license": "GPL-3.0-or-later",
     "author": "akimuska",
     "keywords": [

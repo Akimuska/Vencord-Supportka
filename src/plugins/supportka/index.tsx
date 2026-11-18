@@ -15,7 +15,7 @@ import { startUpdateChecks, stopUpdateChecks, setAutoCheckEnabled } from "./upda
 
 export default definePlugin({
     name: "supportka",
-    description: `Supportka v${PLUGIN_VERSION} — кнопки Мальчик/Девочка/Не-допуск, мьют и отключение от войса в профиле.`,
+    description: `Supportka v${PLUGIN_VERSION}: кнопки Мальчик, Девочка и Не-допуск, мьют и отключение от войса.`,
     searchTerms: ["сапортка", "мальчик", "девочка", "не-допуск", "мьют", "войс"],
     tags: ["Voice", "Utility"],
     enabledByDefault: true,

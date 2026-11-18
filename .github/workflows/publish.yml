@@ -7,7 +7,10 @@ on:
 
 permissions:
   contents: write
-  packages: write
+
+env:
+  # Vencord commit used for the tested Supportka build.
+  VENCORD_COMMIT: d07030c0968e31e41caa0c35fda0ef8ae63a079e
 
 jobs:
   build:
@@ -16,58 +19,61 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get Supportka commit
+        id: hash
+        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://npm.pkg.github.com/
 
       - name: Clone Vencord
         run: |
-          git clone --depth 1 https://github.com/Vendicated/Vencord.git vencord
+          git clone https://github.com/Vendicated/Vencord.git vencord
           cd vencord
+          git checkout "$VENCORD_COMMIT"
           corepack enable
           pnpm install --frozen-lockfile
-
-      - name: Get short commit hash
-        id: hash
-        run: echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Copy plugin
         run: |
           cp -r src/plugins/supportka vencord/src/plugins/supportka
           version="${GITHUB_REF_NAME#v}"
-          sed -i "s/const PLUGIN_VERSION = .*/const PLUGIN_VERSION = \"$version\";/" vencord/src/plugins/supportka/index.tsx
+          sed -i "s/export const PLUGIN_VERSION = .*/export const PLUGIN_VERSION = \"$version\";/" \
+            vencord/src/plugins/supportka/constants.ts
 
       - name: Build standalone
-        env:
-          VENCORD_REMOTE: Akimuska/Vencord-Supportka
-          VENCORD_HASH: ${{ steps.hash.outputs.short }}
         run: |
           cd vencord
-          pnpm build --standalone
+          pnpm build --standalone --disable-updater
+
+      - name: Verify build
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          grep -q "vc-supportka" vencord/dist/renderer.js
+          grep -q "Supportka v$version" vencord/dist/renderer.js
+          ! grep -q "Vencord update is available" vencord/dist/renderer.js
+          ! grep -q "Click here to view the update" vencord/dist/renderer.js
 
       - name: Create ZIP archive
         run: |
           mkdir -p "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist"
           cp vencord/dist/renderer.js vencord/dist/renderer.css \
              vencord/dist/preload.js vencord/dist/patcher.js \
-              "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist/"
+             "/tmp/supportka/supportka-${{ github.ref_name }}/Vencord/dist/"
           cp drop-in.bat "/tmp/supportka/supportka-${{ github.ref_name }}/"
           cd /tmp/supportka
           zip -r "supportka-${{ github.ref_name }}.zip" "supportka-${{ github.ref_name }}"
           mv "supportka-${{ github.ref_name }}.zip" "$GITHUB_WORKSPACE"
 
-      - name: Publish to GitHub Packages
-        run: |
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8').replace(/^\\uFEFF/,''));p.version=process.env.GITHUB_REF_NAME.replace(/^v/,'')+'.0';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
-          npm publish || echo "npm publish skipped (version may already exist or package publishing is unavailable)"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Create release with assets
         uses: softprops/action-gh-release@v2
         with:
           name: "${{ github.ref_name }} ${{ steps.hash.outputs.short }}"
-          files: |
-            supportka-${{ github.ref_name }}.zip
+          body: |
+            Автообновление Supportka: кнопка «Проверить и установить» скачивает ZIP с GitHub, проверяет SHA-256, устанавливает файлы и предлагает перезапустить Discord. Перед заменой создаётся резервная копия, при ошибке выполняется откат.
+
+            Установка: полностью закрой Discord, распакуй `supportka-${{ github.ref_name }}.zip` и запусти `drop-in.bat`. Установщик отключает автообновление Vencord, чтобы оно не заменило Supportka.
+          files: supportka-${{ github.ref_name }}.zip
+          fail_on_unmatched_files: true

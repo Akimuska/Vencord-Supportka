@@ -38,6 +38,20 @@
     background-color: #cf3438 !important;
 }
 
+.vc-btn-base.vc-supportka-disconnect {
+    background-color: #8b5cf6 !important;
+    border-color: transparent !important;
+    color: #fff !important;
+}
+
+.vc-btn-base.vc-supportka-disconnect:hover:not(:disabled) {
+    background-color: #7548d8 !important;
+}
+
+.vc-btn-base.vc-supportka-disconnect:disabled {
+    opacity: 0.5;
+}
+
 .vc-supportka-presets {
     display: flex;
     flex-wrap: wrap;
